@@ -1,47 +1,43 @@
-var map = L.map('mapid').setView([42, -88], 9);
+var map = L.map('mapid').setView([38.6,-94.2],4);
 
-L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
-	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-	subdomains: 'abcd',
-	minZoom: 0,
-	maxZoom: 18,
-	ext: 'png'
+//load tile layer basemap
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
 }).addTo(map);
 
-var marker = L.marker([42,-88]).addTo(map);
-var marker_Camp = L.marker([41.8555,-88.15]).addTo(map);
-var marker_Bucci = L.marker([42.3,-88.4]).addTo(map);
-
-var circle = L.circle([41.975,-87.91], {
-    color: 'purple',
-    fillColor: '#f03',
-    fillOpacity: 0.75,
-    radius: 5000
-}).addTo(map);
-
-var polygon = L.polygon([
-    [42.509, -88.08],
-    [42.503, -88.06],
-    [42.51, -88.047]
-],
-{color:'green',
-fillColor:"yellow"}).addTo(map);
-
-marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
-marker_Camp.bindPopup("<b>Hello world!</b><br>I am the Camp House.").openPopup();
-marker_Bucci.bindPopup("<b>Hello world!</b><br>I am the Bucci House.").openPopup();
-circle.bindPopup("I am ORD Airport.");
-polygon.bindPopup("I am a polygon.");
-
-/*
-var popup = L.popup()
-    .setLatLng([41.5,-87.75])
-    .setContent("I am a standalone popup.")
-    .openOn(map);
- */
-
-function onMapClick(e) {
-    alert("You clicked the map at " + e.latlng);
+// load GeoJSON layer 1 from an external file- layer 1
+$.getJSON("https://raw.githubusercontent.com/adam-camp/sports-stadiums-project-1-leaflet/main/places.geojson",function(data){
+var restIcon = L.icon({
+      iconUrl: 'https://icon-library.com/images/football-stadium-icon/football-stadium-icon-20.jpg',
+      iconSize: [25,25]
+    });  
+L.geoJson(data,{
+      pointToLayer: function(feature,latlng){
+        var marker = L.marker(latlng,{icon: restIcon});
+        var contents = feature.properties.Ballpark  + '<br/>'; 
+        var teams = feature.properties.Teams;
+        for (var i = 0; i < teams.length; ++i) { 
+        contents += teams[i].Team + ": " + teams[i].Class + ", " + teams[i].League+ '<br/>';
+        }
+        marker.bindPopup(contents);
+        return marker;  
 }
+}).addTo(map); //Get geojson 1
+//* layer 2
+$.getJSON("https://raw.githubusercontent.com/adam-camp/sports-stadiums-project-1-leaflet/main/intrstat.geojson",function(data){
 
-map.on('click', onMapClick);
+  
+L.geoJson(data,{
+      pointToLayer: function(feature,latlng){
+        var marker = L.marker(latlng,{icon: restIcon});
+        var contents = feature.properties.Ballpark  + '<br/>'; 
+        var teams = feature.properties.Teams;
+        for (var i = 0; i < teams.length; ++i) { 
+        contents += teams[i].Team + ": " + teams[i].Class + ", " + teams[i].League+ '<br/>';
+        }
+        marker.bindPopup(contents);
+        return marker;  
+}
+}).addTo(map);
+});
+});
